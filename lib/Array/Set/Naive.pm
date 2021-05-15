@@ -15,8 +15,8 @@ our @EXPORT_OK = qw(set_diff set_symdiff set_union set_intersect);
 
 sub set_diff {
     my $opts = ref($_[0]) eq 'HASH' ? shift : {};
-    my $set1 = shift;
 
+    my $set1 = @_ ? shift : [];
     my $res = $set1;
     while (@_) {
         my $set2 = shift;
@@ -51,39 +51,30 @@ sub set_symdiff {
 
 sub set_union {
     my $opts = ref($_[0]) eq 'HASH' ? shift : {};
-    if ($opts->{ignore_case} || $opts->{ignore_blanks} || $opts->{allow_refs}) {
-        _doit('union', $opts, @_);
-    } else {
-        # fast version, without ib/ic/ar
-        my %mem;
-        my $res = [];
-        while (@_) {
-            for my $el (@{ shift @_ }) {
-                push @$res, $el unless $mem{$el}++;
-            }
+
+    my $res = [];
+    for my $set (@_) {
+        for my $el (@$set) {
+            push @$res, $el unless any { $_ eq $el } @$res;
         }
-        $res;
     }
+    $res;
 }
 
 sub set_intersect {
     my $opts = ref($_[0]) eq 'HASH' ? shift : {};
-    if ($opts->{ignore_case} || $opts->{ignore_blanks} || $opts->{allow_refs}) {
-        _doit('intersect', $opts, @_);
-    } else {
-        # fast version, without ib/ic/ar
-        my $set1 = shift;
-        my $res = $set1;
-        while (@_) {
-            my %set2 = map { $_=>1 } @{ shift @_ };
-            $res = [];
-            for my $el (@$set1) {
-                push @$res, $el if $set2{$el};
-            }
-            $set1 = $res;
+
+    return [] unless @_;
+    my $set1 = shift @_;
+    my $res = [];
+  EL:
+    for my $el (@$set1) {
+        for my $set (@_) {
+            next EL unless any { $_ eq $el } @$set;
         }
-        $res;
+        push @$res, $el;
     }
+    $res;
 }
 
 1;
