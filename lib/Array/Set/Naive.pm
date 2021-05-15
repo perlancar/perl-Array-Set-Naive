@@ -8,7 +8,9 @@ package Array::Set::Naive;
 use strict;
 use warnings;
 
-use List::Keywords qw(any);
+# not yet used, problem with hang during build
+#use List::Keywords qw(any);
+use List::Util qw(any);
 
 use Exporter qw(import);
 our @EXPORT_OK = qw(set_diff set_symdiff set_union set_intersect);
@@ -101,7 +103,8 @@ sub set_intersect {
 
 This module is like L<Array::Set>, but instead of using hash (L<Tie::IxHash>) it
 performs linear search. This module is mostly for testing only, including for
-testing using L<List::Keywords>.
+testing using L<List::Keywords> (note: this release does not use List::Keywords
+yet due to problem in distro building).
 
 
 =head1 FUNCTIONS
